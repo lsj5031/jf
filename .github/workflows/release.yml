@@ -19,7 +19,7 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: jf-aarch64-macos.tar.gz
-          - os: macos-13
+          - os: macos-latest
             target: x86_64-apple-darwin
             artifact: jf-x86_64-macos.tar.gz
           - os: windows-latest
