@@ -1,17 +1,22 @@
 [package]
-name = "jinafetch"
+name = "jf"
 version = "0.1.0"
 edition = "2024"
-description = "Fetch any webpage as clean Markdown via jina.ai Reader"
+description = "Fetch any webpage as clean Markdown via jina.ai Reader - ultra-fast CLI"
 license = "MIT"
 authors = ["Leo"]
+repository = "https://github.com/lsj5031/jf"
+readme = "README.md"
+keywords = ["cli", "web", "markdown", "jina", "fetch"]
+categories = ["command-line-utilities", "web-programming"]
 
 [dependencies]
 clap = { version = "4", features = ["derive", "env", "wrap_help"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "gzip", "brotli"] }
-tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread", "time"] }
 anyhow = "1"
 colored = "3"
 dirs = "6"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
