@@ -9,42 +9,61 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: jf-x86_64-linux.tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: jf-aarch64-macos.tar.gz
+          - os: macos-13
+            target: x86_64-apple-darwin
+            artifact: jf-x86_64-macos.tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: jf-x86_64-windows.zip
+
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-gnu, x86_64-apple-darwin, aarch64-apple-darwin, x86_64-pc-windows-msvc
+          targets: ${{ matrix.target }}
 
-      - name: Build Linux (x86_64)
-        run: |
-          cargo build --release --target x86_64-unknown-linux-gnu
-          tar -czvf jf-x86_64-linux.tar.gz -C target/x86_64-unknown-linux-gnu/release jf
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Build macOS (x86_64)
-        run: |
-          cargo build --release --target x86_64-apple-darwin
-          tar -czvf jf-x86_64-macos.tar.gz -C target/x86_64-apple-darwin/release jf
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: tar -czvf ${{ matrix.artifact }} -C target/${{ matrix.target }}/release jf
 
-      - name: Build macOS (ARM64)
-        run: |
-          cargo build --release --target aarch64-apple-darwin
-          tar -czvf jf-aarch64-macos.tar.gz -C target/aarch64-apple-darwin/release jf
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: cd target/${{ matrix.target }}/release && Compress-Archive jf.exe ../../../${{ matrix.artifact }}
 
-      - name: Build Windows (x86_64)
-        run: |
-          cargo build --release --target x86_64-pc-windows-msvc
-          cd target/x86_64-pc-windows-msvc/release && zip ../../../jf-x86_64-windows.zip jf.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            jf-x86_64-linux.tar.gz
-            jf-x86_64-macos.tar.gz
-            jf-aarch64-macos.tar.gz
-            jf-x86_64-windows.zip
+          files: artifacts/*
           generate_release_notes: true
