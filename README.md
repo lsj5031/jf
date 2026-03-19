@@ -14,6 +14,14 @@ cd jf
 cargo install --path .
 ```
 
+### Developer Setup
+
+After cloning, enable the pre-commit hooks:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ### Binary Release
 
 Download from [Releases](https://github.com/lsj5031/jf/releases).
