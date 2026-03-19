@@ -149,7 +149,7 @@ pub async fn fetch_with_retry(
         is_transient: false,
     });
 
-    return Err(anyhow::Error::new(error));
+    Err(anyhow::Error::new(error))
 }
 
 #[cfg(test)]

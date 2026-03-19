@@ -3,8 +3,7 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 /// Default configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,7 +37,6 @@ impl Default for Config {
 
 impl Config {
     /// Load config from file, falling back to defaults
-    #[allow(dead_code)]
     pub fn load_from_file(path: &PathBuf) -> Option<Self> {
         match fs::read_to_string(path) {
             Ok(contents) => toml::from_str(&contents).ok(),
@@ -46,41 +44,7 @@ impl Config {
         }
     }
 
-    /// Find config file in standard locations
-    #[allow(dead_code)]
-    pub fn find_config_file() -> Option<PathBuf> {
-        // Check current directory first
-        let local_paths = vec![".jf.toml", "jf.toml", ".jf/config.toml"];
-        for name in local_paths {
-            let path = PathBuf::from(name);
-            if path.exists() {
-                return Some(path);
-            }
-        }
-
-        // Check home directory
-        if let Some(home) = dirs::home_dir() {
-            let home_paths = vec![home.join(".jf/config.toml"), home.join(".jf.toml")];
-            for path in home_paths {
-                if path.exists() {
-                    return Some(path);
-                }
-            }
-        }
-
-        None
-    }
-
-    /// Load config from standard locations or return defaults
-    #[allow(dead_code)]
-    pub fn load() -> Self {
-        Self::find_config_file()
-            .and_then(|path| Self::load_from_file(&path))
-            .unwrap_or_default()
-    }
-
     /// Create a merged config with CLI overrides
-    #[allow(dead_code)]
     pub fn with_cli_overrides(
         &self,
         timeout: Option<u64>,

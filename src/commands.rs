@@ -207,7 +207,7 @@ pub async fn run() -> Result<()> {
             no_retry,
         } => {
             let client = create_http_client(timeout)?;
-            let url = validate_url(&url).map_err(|e| anyhow::Error::new(e))?;
+            let url = validate_url(&url).map_err(anyhow::Error::new)?;
 
             let retry_config = if no_retry {
                 RetryConfig {
@@ -379,7 +379,7 @@ pub async fn run() -> Result<()> {
                 bail!("No URL provided on stdin");
             }
 
-            let url = validate_url(url).map_err(|e| anyhow::Error::new(e))?;
+            let url = validate_url(url).map_err(anyhow::Error::new)?;
 
             let retry_config = if no_retry {
                 RetryConfig {
@@ -408,7 +408,7 @@ pub async fn run() -> Result<()> {
             retries,
         } => {
             let client = create_http_client(timeout)?;
-            let url = validate_url(&url).map_err(|e| anyhow::Error::new(e))?;
+            let url = validate_url(&url).map_err(anyhow::Error::new)?;
 
             let retry_config = RetryConfig {
                 max_retries: retries,
