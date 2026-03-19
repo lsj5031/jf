@@ -455,14 +455,20 @@ pub async fn run() -> Result<()> {
         Commands::Completions { shell, output } => {
             let mut cmd = Cli::command();
             let mut buf = Vec::new();
-            
+
             clap_complete::generate(shell, &mut cmd, "jf", &mut buf);
-            
+
             match output {
                 Some(path) => {
-                    std::fs::write(&path, &buf)
-                        .with_context(|| format!("Failed to write completions to: {}", path.display()))?;
-                    eprintln!("{} Generated {} completions to {}", "✓".green(), shell, path.display());
+                    std::fs::write(&path, &buf).with_context(|| {
+                        format!("Failed to write completions to: {}", path.display())
+                    })?;
+                    eprintln!(
+                        "{} Generated {} completions to {}",
+                        "✓".green(),
+                        shell,
+                        path.display()
+                    );
                 }
                 None => {
                     std::io::stdout().write_all(&buf)?;

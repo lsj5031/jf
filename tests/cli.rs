@@ -89,7 +89,9 @@ fn test_fetch_missing_url() {
     cmd.arg("fetch")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("the following required arguments were not provided"));
+        .stderr(predicate::str::contains(
+            "the following required arguments were not provided",
+        ));
 }
 
 /// Test invalid URL shows validation error
@@ -181,20 +183,14 @@ fn test_version_flag() {
 #[test]
 fn test_fetch_alias() {
     let mut cmd = Command::cargo_bin("jf").unwrap();
-    cmd.arg("get")
-        .arg("--help")
-        .assert()
-        .success();
+    cmd.arg("get").arg("--help").assert().success();
 }
 
 /// Test visible aliases work for selector command
 #[test]
 fn test_selector_alias() {
     let mut cmd = Command::cargo_bin("jf").unwrap();
-    cmd.arg("extract")
-        .arg("--help")
-        .assert()
-        .success();
+    cmd.arg("extract").arg("--help").assert().success();
 }
 
 /// Test timeout flag parsing
@@ -309,11 +305,7 @@ fn test_batch_file_with_comments() {
     .unwrap();
 
     let mut cmd = Command::cargo_bin("jf").unwrap();
-    cmd.arg("batch")
-        .arg(file)
-        .arg("--help")
-        .assert()
-        .success();
+    cmd.arg("batch").arg(file).arg("--help").assert().success();
 }
 
 /// Test selector flag
@@ -371,7 +363,9 @@ fn test_completions_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Shell to generate completions for"));
+        .stdout(predicate::str::contains(
+            "Shell to generate completions for",
+        ));
 }
 
 /// Test unknown subcommand shows error
