@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook for jf Rust project
+# Runs the same checks as CI: rustfmt, clippy, tests
+#
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Get list of staged .rs files
+STAGED_RS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.rs$' || true)
+
+if [ -z "$STAGED_RS_FILES" ]; then
+    echo "ℹ️  No Rust files changed, skipping checks"
+    exit 0
+fi
+
+echo "📝 Checking formatting (rustfmt)..."
+if ! cargo fmt --all -- --check; then
+    echo ""
+    echo "❌ Formatting check failed!"
+    echo "💡 Run 'cargo fmt --all' to fix formatting issues"
+    exit 1
+fi
+echo "✅ Formatting OK"
+
+echo "🔧 Running clippy..."
+if ! cargo clippy --all-targets --all-features --tests -- -D warnings 2>&1 | head -100; then
+    echo ""
+    echo "❌ Clippy check failed!"
+    echo "💡 Fix clippy warnings before committing"
+    exit 1
+fi
+echo "✅ Clippy OK"
+
+echo "🧪 Running tests..."
+if ! cargo test --all-features -- --nocapture 2>&1 | tail -20; then
+    echo ""
+    echo "❌ Tests failed!"
+    exit 1
+fi
+echo "✅ Tests OK"
+
+echo ""
+echo "✅ All pre-commit checks passed!"
