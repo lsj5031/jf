@@ -368,14 +368,14 @@ fn test_completions_help() {
         ));
 }
 
-/// Test unknown subcommand shows error
+/// Test unknown subcommand is treated as URL and shows validation error
 #[test]
 fn test_unknown_command() {
     let mut cmd = Command::cargo_bin("jf").unwrap();
     cmd.arg("unknown-command")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("unrecognized subcommand"));
+        .stderr(predicate::str::contains("Invalid URL"));
 }
 
 /// Test unknown flag shows error

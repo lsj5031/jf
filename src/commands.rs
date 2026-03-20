@@ -173,6 +173,10 @@ pub enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
+
+    /// Fetch a URL (default when no subcommand is specified)
+    #[command(external_subcommand)]
+    External(Vec<String>),
 }
 
 /// Create HTTP client helper
@@ -474,6 +478,71 @@ pub async fn run() -> Result<()> {
                     std::io::stdout().write_all(&buf)?;
                 }
             }
+        }
+
+        Commands::External(args) => {
+            if args.is_empty() {
+                bail!("No URL provided. Usage: jf <URL> [options]");
+            }
+
+            let url = args[0].clone();
+
+            // Parse known flags from remaining args
+            let mut output: Option<PathBuf> = None;
+            let mut verbose = false;
+            let mut wait_render = false;
+            let mut timeout: u64 = 30;
+            let mut retries: u32 = 3;
+            let mut no_retry = false;
+
+            let mut i = 1;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "-o" | "--output" => {
+                        i += 1;
+                        if i < args.len() {
+                            output = Some(PathBuf::from(&args[i]));
+                        }
+                    }
+                    "-v" | "--verbose" => verbose = true,
+                    "-w" | "--wait-render" => wait_render = true,
+                    "-t" | "--timeout" => {
+                        i += 1;
+                        if i < args.len() {
+                            timeout = args[i].parse().unwrap_or(30);
+                        }
+                    }
+                    "-r" | "--retries" => {
+                        i += 1;
+                        if i < args.len() {
+                            retries = args[i].parse().unwrap_or(3);
+                        }
+                    }
+                    "--no-retry" => no_retry = true,
+                    _ => {} // skip unknown args
+                }
+                i += 1;
+            }
+
+            let client = create_http_client(timeout)?;
+            let url = validate_url(&url).map_err(anyhow::Error::new)?;
+
+            let retry_config = if no_retry {
+                RetryConfig {
+                    max_retries: 0,
+                    ..Default::default()
+                }
+            } else {
+                RetryConfig {
+                    max_retries: retries,
+                    ..Default::default()
+                }
+            };
+
+            let result =
+                http::fetch_with_retry(&client, &url, wait_render, None, verbose, &retry_config)
+                    .await?;
+            write_output(&result.markdown, output.as_ref(), verbose)?;
         }
     }
 
